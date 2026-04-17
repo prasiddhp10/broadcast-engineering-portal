@@ -26,4 +26,14 @@ class MeetingSchedule(models.Model):
     def __str__(self):
         return f"{self.title} - {self.schedule_time.strftime('%Y-%m-%d %H:%M')}"
 
-class MeetingParticipant
+class MeetingParticipant(models.Model):
+    meeting = models.ForeignKey(
+        MeetingSchedule, on_delete = models.CASCADE, related_name = 'participants'
+    )
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+
+    class Meta: 
+        unique_together = ('meeting', 'user')
+    
+    def __str__(self):
+        return f"{self.get_full_name()} in {self.meeting.title}"
