@@ -7,7 +7,7 @@ from teams.models import Team
 class MeetingSchedule(models.Model):
     PLATFORM_CHOICES = [
         ('Zoom', 'Zoom'), ('Teams', 'Microsoft Teams'), 
-        ('Meet', 'Google Meet'), ('Slack', 'Slack Huddle')
+        ('Meet', 'Google Meet'), ('Slack', 'Slack Huddle'),
         ('InPerson', 'In Person')
     ]
 

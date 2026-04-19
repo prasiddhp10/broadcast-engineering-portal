@@ -23,7 +23,7 @@ class Message(models.Model):
         Team, null = True, blank = True, 
         on_delete = models.SET_NULL, related_name = 'team_messages'
     )
-    subject = models.CharField(max_lenght = 200)
+    subject = models.CharField(max_length = 200)
     body = models.TextField()
     status = models.CharField(max_length = 10, choices = STATUS_CHOICES, default = 'DRAFT')
     is_read = models.BooleanField(default = False)

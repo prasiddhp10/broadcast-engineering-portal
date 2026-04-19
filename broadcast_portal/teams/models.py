@@ -18,7 +18,7 @@ class Team(models.Model):
         on_delete = models.SET_NULL, related_name = 'led_teams'
     )
     team_type = models.CharField(max_length = 200, blank = True)
-    jira_project_name = models.CharField(max_length = 200, blankl = True)
+    jira_project_name = models.CharField(max_length = 200, blank = True)
     development_focus = models.TextField(blank = True)
     key_skills = models.TextField(blank = True)
     agile_practices = models.CharField(max_length = 200, blank = True)
@@ -72,7 +72,7 @@ class TeamDependency(models.Model):
 class CodeRepo(models.Model):
     team = models.ForeignKey(Team, on_delete = models.CASCADE, related_name = 'repos')
     repo_name = models.CharField(max_length = 200)
-    repo_url = models.URLField(max_lenght = 2048)
+    repo_url = models.URLField(max_length = 2048)
 
     def __str__(self):
         return self.repo_name
