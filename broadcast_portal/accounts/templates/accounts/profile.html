@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <div style="width:56px;height:56px;background:#133957;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:white;margin-right:16px;">
+    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+  </div>
+  <div>
+    <div style="font-weight:700;font-size:18px;color:#133957;">{{ user.get_full_name }}</div>
+    <div style="color:#888;font-size:13px;">{{ user.username }}</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header-custom">Personal Information</div>
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3 mb-3">
+            <div class="col">
+              <label class="form-label fw-semibold" style="font-size:12px;">FIRST NAME</label>
+              <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+            </div>
+            <div class="col">
+              <label class="form-label fw-semibold" style="font-size:12px;">LAST NAME</label>
+              <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12px;">USERNAME</label>
+            <input type="text" name="username" class="form-control" value="{{ user.username }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12px;">EMAIL ADDRESS</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email }}">
+          </div>
+          <button type="submit" name="update_profile" class="btn btn-primary me-2">Save Changes</button>
+          <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header-custom">Change Password</div>
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12px;">CURRENT PASSWORD</label>
+            <input type="password" name="old_password" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12px;">NEW PASSWORD</label>
+            <input type="password" name="new_password1" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:12px;">CONFIRM PASSWORD</label>
+            <input type="password" name="new_password2" class="form-control">
+          </div>
+          {% if password_form.errors %}
+            <div class="alert alert-danger" style="font-size:12px;">{{ password_form.errors }}</div>
+          {% endif %}
+          <button type="submit" name="change_password" class="btn btn-primary w-100">Change Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
