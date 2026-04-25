@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Organisation Chart{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 style="color:#133957;font-weight:700;margin:0;">Organisation Chart</h4>
+    <small class="text-muted">{{ departments|length }} departments · {{ total_teams }} teams</small>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'organization:team_types' %}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-tag"></i> Team Types
+    </a>
+    <a href="{% url 'teams:dependency_map' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-diagram-3"></i> Dependency Map
+    </a>
+  </div>
+</div>
+
+{% for dept in departments %}
+<div class="card mb-4">
+  <div class="card-header-custom d-flex justify-content-between align-items-center">
+    <div>
+      <i class="bi bi-building"></i> {{ dept.department_name }}
+      <span class="badge bg-light text-dark ms-2" style="font-size:11px;">
+        {{ dept.teams.count }} teams
+      </span>
+    </div>
+    {% if dept.department_head %}
+    <span style="font-size:12px;opacity:.85;">
+      <i class="bi bi-person-badge"></i> Head: {{ dept.department_head.get_full_name }}
+    </span>
+    {% endif %}
+  </div>
+  <div class="card-body p-3">
+    <a href="{% url 'organization:department' dept.pk %}"
+       class="btn btn-sm btn-outline-primary mb-3" style="font-size:12px;">
+      View Department Details
+    </a>
+    <div class="row g-2">
+      {% for team in dept.teams.all %}
+      <div class="col-md-3 col-sm-4 col-6">
+        <a href="{% url 'teams:detail' team.pk %}" class="text-decoration-none">
+          <div class="border rounded p-2 text-center
+            {% if team.status != 'ACTIVE' %}opacity-50{% endif %}"
+            style="background:{% if team.status == 'ACTIVE' %}#eaf0f6{% else %}#f5f5f5{% endif %};">
+            <div style="width:36px;height:36px;background:#133957;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;
+                        color:white;font-size:13px;font-weight:700;margin:0 auto 6px;">
+              {{ team.name|first|upper }}
+            </div>
+            <div style="font-size:11px;font-weight:600;color:#133957;">{{ team.name }}</div>
+            <div style="font-size:10px;color:#888;">{{ team.members.count }} members</div>
+            {% if team.team_type %}
+            <div style="font-size:9px;color:#476A86;margin-top:2px;">{{ team.team_type }}</div>
+            {% endif %}
+            <span class="badge mt-1
+              {% if team.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}"
+              style="font-size:9px;">{{ team.status }}</span>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="alert alert-info">No departments found. Add them via the Admin panel.</div>
+{% endfor %}
+{% endblock %}
