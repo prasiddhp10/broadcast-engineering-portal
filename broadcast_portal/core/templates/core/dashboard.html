@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Broadcast Engineering{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <div style="font-size:22px;font-weight:700;color:#133957;">
+      Welcome back, {{ user.first_name }}! 
+    </div>
+    <div style="color:#888;font-size:13px;">{% now "l, F j Y" %}</div>
+  </div>
+  <!-- Notifications -->
+  <div class="d-flex gap-2 align-items-center">
+    {% if unread_messages %}
+    <a href="{% url 'messaging:inbox' %}"
+       class="btn btn-sm btn-outline-primary position-relative">
+      <i class="bi bi-envelope"></i> Messages
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style="font-size:9px;">{{ unread_messages }}</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'schedule:create' %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-circle"></i> New Meeting
+    </a>
+  </div>
+</div>
+
+<!-- User's teams banner -->
+{% for team in user_teams %}
+<div class="card mb-3 p-3" style="border-left:4px solid #133957;">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div style="font-weight:600;color:#133957;">{{ team.name }}</div>
+      <small style="color:#888;">
+        <i class="bi bi-person"></i>
+        Leader: {{ team.team_leader.get_full_name|default:"Unassigned" }}
+        &nbsp;|&nbsp;
+        <i class="bi bi-building"></i> {{ team.department.department_name }}
+      </small>
+    </div>
+    <a href="{% url 'teams:detail' team.pk %}" class="btn btn-sm btn-primary">View Team</a>
+  </div>
+</div>
+{% empty %}
+<div class="alert alert-info mb-3">
+  You are not a member of any team yet.
+  <a href="{% url 'teams:list' %}">Browse teams</a>
+</div>
+{% endfor %}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ total_teams }}</div>
+      <div class="stat-label">Total Teams</div>
+      <div style="font-size:11px;color:#aaa;">{{ total_departments }} Departments</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:#2E6B4F;">{{ active_teams }}</div>
+      <div class="stat-label">Active Teams</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:#7B2D2D;">{{ offline_teams }}</div>
+      <div class="stat-label">Disbanded / Merged</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:#476A86;">{{ unread_messages }}</div>
+      <div class="stat-label">Unread Messages</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Quick Links -->
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px;color:#133957;">
+        <i class="bi bi-lightning-charge"></i> Quick Actions
+      </div>
+      <a href="{% url 'teams:list' %}" class="d-flex align-items-center gap-2 p-2 rounded mb-1
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-people" style="color:#133957;"></i>
+        <span style="font-size:13px;">Browse All Teams</span>
+      </a>
+      <a href="{% url 'organization:org' %}" class="d-flex align-items-center gap-2 p-2 rounded mb-1
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-diagram-3" style="color:#133957;"></i>
+        <span style="font-size:13px;">View Org Chart</span>
+      </a>
+      <a href="{% url 'organization:team_types' %}" class="d-flex align-items-center gap-2 p-2 rounded mb-1
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-tag" style="color:#133957;"></i>
+        <span style="font-size:13px;">Team Types</span>
+      </a>
+      <a href="{% url 'messaging:compose' %}" class="d-flex align-items-center gap-2 p-2 rounded mb-1
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-envelope" style="color:#133957;"></i>
+        <span style="font-size:13px;">Send a Message</span>
+      </a>
+      <a href="{% url 'schedule:create' %}" class="d-flex align-items-center gap-2 p-2 rounded mb-1
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-calendar-plus" style="color:#133957;"></i>
+        <span style="font-size:13px;">Schedule a Meeting</span>
+      </a>
+      <a href="{% url 'teams:dependency_map' %}" class="d-flex align-items-center gap-2 p-2 rounded
+         text-decoration-none" style="color:#333;background:#f8f9fa;">
+        <i class="bi bi-share" style="color:#133957;"></i>
+        <span style="font-size:13px;">Dependency Map</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Upcoming Meetings -->
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-12" style="margin-bottom:12px;">
+        <div style="font-weight:600;font-size:14px;color:#133957;">
+          <i class="bi bi-calendar3"></i> This Week's Meetings
+        </div>
+        <a href="{% url 'schedule:list' %}" style="font-size:12px;color:#476A86;">View all</a>
+      </div>
+      {% for meeting in upcoming_meetings %}
+      <a href="{% url 'schedule:detail' meeting.pk %}" class="text-decoration-none">
+        <div class="d-flex gap-2 align-items-start mb-2 p-2 rounded" style="background:#f8f9fa;">
+          <div style="background:#133957;color:white;border-radius:6px;
+                      padding:4px 8px;text-align:center;min-width:36px;flex-shrink:0;">
+            <div style="font-size:14px;font-weight:700;line-height:1;">
+              {{ meeting.schedule_time|date:"j" }}
+            </div>
+            <div style="font-size:8px;text-transform:uppercase;">
+              {{ meeting.schedule_time|date:"M" }}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#133957;">
+              {{ meeting.title|truncatechars:28 }}
+            </div>
+            <div style="font-size:10px;color:#888;">
+              {{ meeting.schedule_time|date:"H:i" }} · {{ meeting.platform|default:"—" }}
+            </div>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p class="text-muted" style="font-size:13px;">No meetings this week.</p>
+      {% endfor %}
+      <a href="{% url 'schedule:monthly' %}" class="btn btn-sm btn-outline-primary w-100 mt-2"
+         style="font-size:12px;">
+        <i class="bi bi-calendar-month"></i> Monthly View
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px;color:#133957;">
+        <i class="bi bi-clock-history"></i> Recent Activity
+      </div>
+      {% for log in recent_activity %}
+      <div class="d-flex gap-2 align-items-start mb-2" style="font-size:12px;">
+        <span class="badge
+          {% if log.action == 'CREATE' %}bg-success
+          {% elif log.action == 'UPDATE' %}bg-warning text-dark
+          {% elif log.action == 'DELETE' %}bg-danger
+          {% else %}bg-secondary{% endif %}"
+          style="font-size:9px;flex-shrink:0;margin-top:2px;">{{ log.action }}</span>
+        <div>
+          <span style="color:#333;">{{ log.entity_type }}</span>
+          {% if log.user %}
+          <span style="color:#888;"> by {{ log.user.get_full_name|default:log.user.username }}</span>
+          {% endif %}
+          <div style="color:#aaa;font-size:10px;">{{ log.timestamp|date:"M j, H:i" }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted" style="font-size:13px;">No recent activity.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
