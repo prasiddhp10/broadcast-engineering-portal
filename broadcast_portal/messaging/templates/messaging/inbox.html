@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:#133957;font-weight:700;margin:0;">
+    {% if active == 'inbox' %}Inbox{% elif active == 'sent' %}Sent{% else %}Drafts{% endif %}
+    {% if unread %}<span class="badge bg-danger ms-2" style="font-size:12px;">{{ unread }}</span>{% endif %}
+  </h4>
+  <a href="{% url 'messaging:compose' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-pencil-square"></i> New Message
+  </a>
+</div>
+
+<!-- Sub nav -->
+<div class="d-flex gap-2 mb-4">
+  <a href="{% url 'messaging:inbox' %}" class="btn btn-sm {% if active == 'inbox' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="bi bi-inbox"></i> Inbox
+  </a>
+  <a href="{% url 'messaging:sent' %}" class="btn btn-sm {% if active == 'sent' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="bi bi-send"></i> Sent
+  </a>
+  <a href="{% url 'messaging:drafts' %}" class="btn btn-sm {% if active == 'draft' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="bi bi-file-text"></i> Drafts
+  </a>
+</div>
+
+<div class="card">
+  {% for msg in msgs %}
+  <a href="{% url 'messaging:detail' msg.pk %}" class="text-decoration-none">
+    <div class="d-flex align-items-center p-3 border-bottom {% if not msg.is_read and active == 'inbox' %}fw-bold{% endif %}"
+         style="background:{% if not msg.is_read and active == 'inbox' %}#f0f5ff{% else %}white{% endif %};">
+      <div style="width:36px;height:36px;background:#133957;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;margin-right:14px;">
+        {{ msg.sender.first_name|first|upper }}{{ msg.sender.last_name|first|upper }}
+      </div>
+      <div class="flex-grow-1">
+        <div style="font-size:13px;color:#133957;">{{ msg.sender.get_full_name }}</div>
+        <div style="font-size:13px;color:#333;">{{ msg.subject }}</div>
+        <div style="font-size:11px;color:#aaa;">{{ msg.body|truncatechars:60 }}</div>
+      </div>
+      <div style="font-size:11px;color:#aaa;flex-shrink:0;">{{ msg.created_at|date:"M j, H:i" }}</div>
+    </div>
+  </a>
+  {% empty %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-envelope-open" style="font-size:40px;"></i>
+    <p class="mt-2">No messages here.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
