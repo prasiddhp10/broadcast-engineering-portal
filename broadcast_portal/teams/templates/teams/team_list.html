@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 style="color:#133957;font-weight:700;margin:0;">Engineering Teams</h4>
+    <small class="text-muted">{{ teams|length }} team(s) found</small>
+  </div>
+  <!-- Grid / List toggle -->
+  <div class="btn-group" role="group">
+    <a href="?view=grid&q={{ q }}&dept={{ dept_filter }}&status={{ status_filter }}"
+       class="btn btn-sm {% if view_mode == 'grid' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+      <i class="bi bi-grid"></i> Grid
+    </a>
+    <a href="?view=list&q={{ q }}&dept={{ dept_filter }}&status={{ status_filter }}"
+       class="btn btn-sm {% if view_mode == 'list' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+      <i class="bi bi-list-ul"></i> List
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4 p-3">
+  <form method="get" class="row g-2 align-items-end">
+    <input type="hidden" name="view" value="{{ view_mode }}">
+    <div class="col-md-4">
+      <label class="form-label" style="font-size:11px;font-weight:600;text-transform:uppercase;">Search</label>
+      <input type="text" name="q" class="form-control form-control-sm"
+             value="{{ q }}" placeholder="Team name, manager, department...">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" style="font-size:11px;font-weight:600;text-transform:uppercase;">Department</label>
+      <select name="dept" class="form-select form-select-sm">
+        <option value="">All Departments</option>
+        {% for dept in departments %}
+        <option value="{{ dept.department_name }}"
+          {% if dept_filter == dept.department_name %}selected{% endif %}>
+          {{ dept.department_name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" style="font-size:11px;font-weight:600;text-transform:uppercase;">Status</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="">All</option>
+        <option value="ACTIVE" {% if status_filter == "ACTIVE" %}selected{% endif %}>Active</option>
+        <option value="DISBANDED" {% if status_filter == "DISBANDED" %}selected{% endif %}>Disbanded</option>
+        <option value="MERGED" {% if status_filter == "MERGED" %}selected{% endif %}>Merged</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary btn-sm me-1">Filter</button>
+      <a href="{% url 'teams:list' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- GRID VIEW -->
+{% if view_mode == 'grid' %}
+<div class="row g-3">
+  {% for team in teams %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h6 style="font-weight:700;color:#133957;margin:0;">{{ team.name }}</h6>
+          <span class="badge {% if team.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}"
+                style="font-size:10px;">{{ team.status }}</span>
+        </div>
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">
+          <i class="bi bi-building"></i> {{ team.department.department_name }}
+        </div>
+        {% if team.team_leader %}
+        <div style="font-size:12px;color:#555;margin-bottom:6px;">
+          <i class="bi bi-person-fill"></i> {{ team.team_leader.get_full_name }}
+        </div>
+        {% endif %}
+        {% if team.development_focus %}
+        <div style="font-size:11px;color:#777;margin-bottom:10px;">
+          {{ team.development_focus|truncatechars:70 }}
+        </div>
+        {% endif %}
+        <div class="d-flex gap-1 mt-auto">
+          <a href="{% url 'teams:detail' team.pk %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+            View
+          </a>
+          <a href="{% url 'teams:email_team' team.pk %}" class="btn btn-sm btn-outline-secondary"
+             title="Email Team"><i class="bi bi-envelope"></i></a>
+          <a href="{% url 'schedule:create' %}?team={{ team.pk }}" class="btn btn-sm btn-outline-secondary"
+             title="Schedule Meeting"><i class="bi bi-calendar-plus"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-info">No teams found.</div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<!-- LIST VIEW -->
+<div class="card">
+  <table class="table mb-0">
+    <thead style="background:#f8f9fa;">
+      <tr>
+        <th style="font-size:12px;">Team Name</th>
+        <th style="font-size:12px;">Department</th>
+        <th style="font-size:12px;">Leader</th>
+        <th style="font-size:12px;">Members</th>
+        <th style="font-size:12px;">Status</th>
+        <th style="font-size:12px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for team in teams %}
+      <tr>
+        <td style="font-size:13px;font-weight:600;color:#133957;">{{ team.name }}</td>
+        <td style="font-size:13px;">{{ team.department.department_name }}</td>
+        <td style="font-size:13px;">{{ team.team_leader.get_full_name|default:"—" }}</td>
+        <td style="font-size:13px;">{{ team.members.count }}</td>
+        <td>
+          <span class="badge {% if team.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}"
+                style="font-size:10px;">{{ team.status }}</span>
+        </td>
+        <td>
+          <a href="{% url 'teams:detail' team.pk %}" class="btn btn-xs btn-outline-primary btn-sm">View</a>
+          <a href="{% url 'teams:email_team' team.pk %}" class="btn btn-xs btn-outline-secondary btn-sm"
+             title="Email Team"><i class="bi bi-envelope"></i></a>
+          <a href="{% url 'schedule:create' %}?team={{ team.pk }}"
+             class="btn btn-xs btn-outline-secondary btn-sm" title="Schedule Meeting">
+            <i class="bi bi-calendar-plus"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-muted text-center py-3">No teams found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
