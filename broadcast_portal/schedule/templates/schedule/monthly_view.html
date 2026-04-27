@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ month_name }} {{ year }} – Schedule{% endblock %}
+{% block extra_css %}
+.cal-day { min-height: 80px; vertical-align: top; padding: 6px; border: 1px solid #eee; }
+.cal-day.today { background: #eaf0f6; }
+.cal-day.empty { background: #fafafa; }
+.cal-day-num { font-size: 12px; font-weight: 700; color: #133957; margin-bottom: 4px; }
+.cal-event { font-size: 10px; background: #133957; color: white; border-radius: 3px;
+             padding: 2px 5px; margin-bottom: 2px; white-space: nowrap;
+             overflow: hidden; text-overflow: ellipsis; display: block; text-decoration: none; }
+.cal-event:hover { background: #476A86; color: white; }
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 style="color:#133957;font-weight:700;margin:0;">{{ month_name }} {{ year }}</h4>
+    <small class="text-muted">{{ total_meetings }} meeting(s) this month</small>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'schedule:monthly' %}?month={{ prev_month }}&year={{ prev_year }}"
+       class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left"></i> Prev</a>
+    <a href="{% url 'schedule:list' %}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-calendar3"></i> Upcoming
+    </a>
+    <a href="{% url 'schedule:monthly' %}?month={{ next_month }}&year={{ next_year }}"
+       class="btn btn-sm btn-outline-secondary">Next <i class="bi bi-chevron-right"></i></a>
+    <a href="{% url 'schedule:create' %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-circle"></i> New Meeting
+    </a>
+  </div>
+</div>
+
+<div class="card p-3">
+  <table class="table table-bordered mb-0" style="table-layout:fixed;">
+    <thead>
+      <tr style="background:#133957;color:white;">
+        {% for day in "Mon,Tue,Wed,Thu,Fri,Sat,Sun"|split:"," %}
+        <th class="text-center" style="font-size:12px;padding:8px;">{{ day }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in cal %}
+      <tr>
+        {% for day in week %}
+        <td class="cal-day {% if day == 0 %}empty{% elif day == today %}today{% endif %}">
+          {% if day != 0 %}
+          <div class="cal-day-num">{{ day }}</div>
+          {% for meeting in day_meetings|default:'' %}{% endfor %}
+          {% for m_day, m_list in day_meetings.items %}
+            {% if m_day == day %}
+              {% for meeting in m_list %}
+              <a href="{% url 'schedule:detail' meeting.pk %}" class="cal-event"
+                 title="{{ meeting.title }} – {{ meeting.schedule_time|date:'H:i' }}">
+                {{ meeting.schedule_time|date:"H:i" }} {{ meeting.title|truncatechars:14 }}
+              </a>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-3 d-flex gap-2 flex-wrap">
+  {% for m_day, m_list in day_meetings.items %}
+  {% for meeting in m_list %}
+  <div class="card p-2" style="min-width:220px;max-width:280px;">
+    <div style="font-weight:600;font-size:13px;color:#133957;">{{ meeting.title }}</div>
+    <div style="font-size:11px;color:#888;">
+      {{ meeting.schedule_time|date:"l, F j – H:i" }}
+      &nbsp;·&nbsp; {{ meeting.platform|default:"—" }}
+    </div>
+    <div style="font-size:11px;color:#476A86;">{{ meeting.team.name }}</div>
+    <a href="{% url 'schedule:detail' meeting.pk %}"
+       class="btn btn-xs btn-outline-primary btn-sm mt-1" style="font-size:11px;">Details</a>
+  </div>
+  {% endfor %}
+  {% endfor %}
+</div>
+{% endblock %}
