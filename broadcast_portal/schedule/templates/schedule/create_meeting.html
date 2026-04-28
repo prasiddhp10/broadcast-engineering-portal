@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Schedule Meeting{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h4 style="color:#133957;font-weight:700;margin:0;">Schedule a Meeting</h4>
+  <small class="text-muted">Set up a new meeting for your team</small>
+</div>
+
+<div class="card p-4" style="max-width:700px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label fw-semibold" style="font-size:12px;">MEETING TITLE *</label>
+      <input type="text" name="title" class="form-control form-control-sm"
+             placeholder="e.g. Weekly Standup" required>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" style="font-size:12px;">TEAM *</label>
+        <select name="team" class="form-select form-select-sm" required>
+          <option value="">Select team...</option>
+          {% for team in teams %}
+          <option value="{{ team.pk }}"
+            {% if preselect_team == team.pk|stringformat:"s" %}selected{% endif %}>
+            {{ team.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold" style="font-size:12px;">PLATFORM</label>
+        <select name="platform" class="form-select form-select-sm">
+          <option value="">Select platform...</option>
+          <option value="Zoom">Zoom</option>
+          <option value="Teams">Microsoft Teams</option>
+          <option value="Meet">Google Meet</option>
+          <option value="Slack">Slack Huddle</option>
+          <option value="InPerson">In Person</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" style="font-size:12px;">DATE &amp; TIME *</label>
+      <input type="datetime-local" name="schedule_time" class="form-control form-control-sm" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" style="font-size:12px;">MEETING LINK</label>
+      <input type="url" name="meeting_link" class="form-control form-control-sm"
+             placeholder="https://zoom.us/j/...">
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" style="font-size:12px;">MESSAGE / AGENDA</label>
+      <textarea name="description" class="form-control" rows="4"
+                placeholder="Meeting agenda, notes, or message to participants..."></textarea>
+    </div>
+    <div class="mb-4">
+      <label class="form-label fw-semibold" style="font-size:12px;">INVITE PARTICIPANTS</label>
+      <select name="participants" class="form-select form-select-sm" multiple size="6">
+        {% for u in users %}
+        <option value="{{ u.pk }}">{{ u.get_full_name }} ({{ u.username }})</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple.</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-calendar-check"></i> Schedule Meeting
+      </button>
+      <a href="{% url 'schedule:list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
