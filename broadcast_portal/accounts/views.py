@@ -36,7 +36,7 @@ def login_view(request):
 
 @login_required
 def logout_view(request): 
-    AuditLog.objects.create(user = request.user, action = 'LOGOUT', entity_type = 'User', entity_id = request.user.ok)
+    AuditLog.objects.create(user = request.user, action = 'LOGOUT', entity_type = 'User', entity_id = request.user.pk)
     logout(request)
     return redirect('accounts:login')
 
