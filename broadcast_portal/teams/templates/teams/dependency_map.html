@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Dependency Map{% endblock %}
+{% block content %}
+<h4 style="color:#133957;font-weight:700;margin-bottom:20px;">Team Dependency Map</h4>
+<div class="card p-4" style="min-height:500px;">
+  <svg id="dep-map" width="100%" height="500"></svg>
+</div>
+<script>
+const teams = [
+  {% for team in teams %}
+  { id: {{ team.pk }}, name: "{{ team.name|escapejs }}", status: "{{ team.status }}" },
+  {% endfor %}
+];
+const links = [
+  {% for dep in dependencies %}
+  { source: {{ dep.team.pk }}, target: {{ dep.depends_on_team.pk }}, type: "{{ dep.dependency_type|escapejs }}" },
+  {% endfor %}
+];
+// Simple circular layout
+const svg = document.getElementById('dep-map');
+const W = svg.clientWidth || 800;
+const H = 500;
+const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.4;
+const pos = {};
+teams.forEach((t, i) => {
+  const angle = (2 * Math.PI * i) / teams.length - Math.PI / 2;
+  pos[t.id] = { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+});
+// Draw links
+links.forEach(l => {
+  const s = pos[l.source], t = pos[l.target];
+  if (!s || !t) return;
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('x1', s.x); line.setAttribute('y1', s.y);
+  line.setAttribute('x2', t.x); line.setAttribute('y2', t.y);
+  line.setAttribute('stroke', '#476A86'); line.setAttribute('stroke-width', '1.5');
+  line.setAttribute('marker-end', 'url(#arrow)');
+  svg.appendChild(line);
+});
+// Arrow marker
+const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+defs.innerHTML = `<marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
+  <path d="M0,0 L0,6 L8,3 z" fill="#476A86"/>
+</marker>`;
+svg.insertBefore(defs, svg.firstChild);
+// Draw nodes
+teams.forEach(t => {
+  const p = pos[t.id];
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.style.cursor = 'pointer';
+  g.onclick = () => window.location.href = `/teams/${t.id}/`;
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y); circle.setAttribute('r', 30);
+  circle.setAttribute('fill', t.status === 'ACTIVE' ? '#133957' : '#999');
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', p.x); text.setAttribute('y', p.y + 4);
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('fill', 'white'); text.setAttribute('font-size', '9');
+  text.textContent = t.name.length > 12 ? t.name.substring(0, 10) + '…' : t.name;
+  g.appendChild(circle); g.appendChild(text);
+  svg.appendChild(g);
+});
+</script>
+{% endblock %}

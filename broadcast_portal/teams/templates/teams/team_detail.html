@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }} – Teams{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" style="font-size:13px;">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'teams:list' %}">Teams</a></li>
+    <li class="breadcrumb-item active">{{ team.name }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <h4 style="color:#133957;font-weight:700;margin:0;">{{ team.name }}</h4>
+    <small class="text-muted">
+      <i class="bi bi-building"></i> {{ team.department.department_name }}
+      &nbsp;|&nbsp;
+      <span class="badge {% if team.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">
+        {{ team.status }}
+      </span>
+      {% if team.team_type %}
+        &nbsp;|&nbsp; <span class="badge" style="background:#476A86;">{{ team.team_type }}</span>
+      {% endif %}
+    </small>
+    {% if team.team_leader %}
+    <div style="font-size:13px;color:#555;margin-top:4px;">
+      <i class="bi bi-person-fill"></i> Team Leader: <strong>{{ team.team_leader.get_full_name }}</strong>
+    </div>
+    {% endif %}
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'teams:email_team' team.pk %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-envelope"></i> Email Team
+    </a>
+    <a href="{% url 'schedule:create' %}?team={{ team.pk }}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-calendar-plus"></i> Schedule Meeting
+    </a>
+    {% if user == team.team_leader or user.is_staff %}
+    <button class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-pencil"></i> Edit Team
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tab navigation -->
+<ul class="nav nav-tabs mb-4" id="teamTab">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#members">
+    <i class="bi bi-people"></i> Members ({{ members|length }})
+  </a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#repositories">
+    <i class="bi bi-github"></i> Repositories
+  </a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#dependencies">
+    <i class="bi bi-diagram-3"></i> Dependencies
+  </a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#contact">
+    <i class="bi bi-chat-dots"></i> Contact Channels
+  </a></li>
+</ul>
+
+<div class="tab-content">
+  <!-- Members -->
+  <div class="tab-pane fade show active" id="members">
+    <div class="card">
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead style="background:#f8f9fa;">
+            <tr>
+              <th style="font-size:12px;">Name</th>
+              <th style="font-size:12px;">Username</th>
+              <th style="font-size:12px;">Email</th>
+              <th style="font-size:12px;">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in members %}
+            <tr>
+              <td style="font-size:13px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#133957;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;">
+                    {{ m.user.first_name|first|upper }}{{ m.user.last_name|first|upper }}
+                  </div>
+                  {{ m.user.get_full_name }}
+                </div>
+              </td>
+              <td style="font-size:13px;">{{ m.user.username }}</td>
+              <td style="font-size:13px;">{{ m.user.email }}</td>
+              <td style="font-size:13px;">{{ m.role_in_team|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-muted text-center py-3">No members yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repos -->
+  <div class="tab-pane fade" id="repositories">
+    <div class="card p-3">
+      {% for repo in repos %}
+      <div class="d-flex align-items-center gap-3 mb-3 p-2 border rounded">
+        <i class="bi bi-github" style="font-size:22px;color:#133957;"></i>
+        <div>
+          <div style="font-weight:600;font-size:13px;">{{ repo.repo_name }}</div>
+          <a href="{{ repo.repo_url }}" target="_blank" style="font-size:12px;color:#476A86;">
+            {{ repo.repo_url }}
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">No repositories linked.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <div class="tab-pane fade" id="dependencies">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <div style="font-weight:600;font-size:14px;color:#133957;margin-bottom:12px;">
+            ↑ Upstream — {{ team.name }} depends on
+          </div>
+          {% for dep in upstream_deps %}
+          <div class="border rounded p-2 mb-2" style="border-left:3px solid #133957 !important;">
+            <a href="{% url 'teams:detail' dep.depends_on_team.pk %}"
+               style="font-weight:600;font-size:13px;color:#133957;">
+              {{ dep.depends_on_team.name }}
+            </a>
+            <div style="font-size:11px;color:#888;">{{ dep.dependency_type }}</div>
+          </div>
+          {% empty %}
+          <p class="text-muted" style="font-size:13px;">No upstream dependencies.</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3">
+          <div style="font-weight:600;font-size:14px;color:#476A86;margin-bottom:12px;">
+            ↓ Downstream — depends on {{ team.name }}
+          </div>
+          {% for dep in downstream_deps %}
+          <div class="border rounded p-2 mb-2" style="border-left:3px solid #476A86 !important;">
+            <a href="{% url 'teams:detail' dep.team.pk %}"
+               style="font-weight:600;font-size:13px;color:#476A86;">
+              {{ dep.team.name }}
+            </a>
+            <div style="font-size:11px;color:#888;">{{ dep.dependency_type }}</div>
+          </div>
+          {% empty %}
+          <p class="text-muted" style="font-size:13px;">No downstream dependencies.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% if user == team.team_leader or user.is_staff %}
+    <div class="card p-3">
+      <h6 style="color:#133957;">Add Dependency</h6>
+      <form method="post" action="{% url 'teams:add_dependency' team.pk %}" class="row g-2">
+        {% csrf_token %}
+        <div class="col-md-5">
+          <select name="upstream_team" class="form-select form-select-sm">
+            <option value="">Select upstream team...</option>
+            {% for t in all_teams %}
+            <option value="{{ t.pk }}">{{ t.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select name="dependency_type" class="form-select form-select-sm">
+            <option value="Infrastructure Support">Infrastructure Support</option>
+            <option value="CI/CD Support">CI/CD Support</option>
+            <option value="Bug Resolution">Bug Resolution</option>
+            <option value="Security Fixes">Security Fixes</option>
+            <option value="Agile Coaching">Agile Coaching</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary btn-sm w-100">+ Add</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Contact Channels -->
+  <div class="tab-pane fade" id="contact">
+    <div class="card p-3">
+      {% for ch in channels %}
+      <div class="d-flex align-items-center gap-3 mb-3 p-2 border rounded">
+        {% if ch.channel_type == 'SLACK' %}
+          <i class="bi bi-slack" style="font-size:22px;color:#611f69;"></i>
+        {% elif ch.channel_type == 'EMAIL' %}
+          <i class="bi bi-envelope" style="font-size:22px;color:#133957;"></i>
+        {% elif ch.channel_type == 'JIRA' %}
+          <i class="bi bi-bug" style="font-size:22px;color:#0052cc;"></i>
+        {% else %}
+          <i class="bi bi-chat-dots" style="font-size:22px;color:#476A86;"></i>
+        {% endif %}
+        <div>
+          <div style="font-weight:600;font-size:13px;">{{ ch.channel_name }}</div>
+          <div style="font-size:12px;color:#888;">{{ ch.get_channel_type_display }} — {{ ch.value }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">No contact channels listed.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if team.development_focus or team.key_skills or team.agile_practices %}
+<div class="row g-3 mt-1">
+  {% if team.development_focus %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div style="font-weight:600;font-size:13px;color:#133957;margin-bottom:6px;">
+        <i class="bi bi-bullseye"></i> Development Focus
+      </div>
+      <div style="font-size:12px;color:#555;">{{ team.development_focus }}</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if team.key_skills %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div style="font-weight:600;font-size:13px;color:#133957;margin-bottom:6px;">
+        <i class="bi bi-tools"></i> Key Skills
+      </div>
+      <div style="font-size:12px;color:#555;">{{ team.key_skills }}</div>
+    </div>
+  </div>
+  {% endif %}
+  {% if team.agile_practices %}
+  <div class="col-md-4">
+    <div class="card p-3">
+      <div style="font-weight:600;font-size:13px;color:#133957;margin-bottom:6px;">
+        <i class="bi bi-arrow-repeat"></i> Agile Practices
+      </div>
+      <div style="font-size:12px;color:#555;">{{ team.agile_practices }}</div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
