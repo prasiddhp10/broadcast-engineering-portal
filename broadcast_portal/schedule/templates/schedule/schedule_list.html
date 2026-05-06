@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:#133957;font-weight:700;margin:0;">Meeting Schedule</h4>
+  <div class="d-flex gap-2">
+    <a href="{% url 'schedule:monthly' %}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-calendar-month"></i> Monthly View
+    </a>
+    <a href="{% url 'schedule:create' %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-circle"></i> Schedule Meeting
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- This week -->
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header-custom">
+        <i class="bi bi-calendar-week"></i> This Week
+      </div>
+      <div class="card-body p-0">
+        {% for meeting in weekly %}
+        <a href="{% url 'schedule:detail' meeting.pk %}" class="text-decoration-none">
+          <div class="d-flex gap-3 p-3 border-bottom align-items-start">
+            <div style="background:#133957;color:white;border-radius:8px;
+                        padding:6px 10px;text-align:center;min-width:44px;">
+              <div style="font-size:18px;font-weight:700;line-height:1;">
+                {{ meeting.schedule_time|date:"j" }}
+              </div>
+              <div style="font-size:9px;text-transform:uppercase;">
+                {{ meeting.schedule_time|date:"M" }}
+              </div>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:13px;color:#133957;">{{ meeting.title }}</div>
+              <div style="font-size:11px;color:#888;">
+                <i class="bi bi-clock"></i> {{ meeting.schedule_time|date:"H:i" }}
+                &nbsp;|&nbsp;
+                <i class="bi bi-camera-video"></i> {{ meeting.platform|default:"—" }}
+              </div>
+              <div style="font-size:11px;color:#888;">{{ meeting.team.name }}</div>
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        <div class="text-center py-4 text-muted" style="font-size:13px;">
+          No meetings this week.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming -->
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header-custom">
+        <i class="bi bi-calendar-check"></i> Upcoming Meetings
+      </div>
+      <div class="card-body p-0">
+        {% for meeting in upcoming %}
+        <a href="{% url 'schedule:detail' meeting.pk %}" class="text-decoration-none">
+          <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <div class="d-flex gap-3 align-items-center">
+              <div style="width:44px;height:44px;background:#476A86;border-radius:8px;
+                          display:flex;align-items:center;justify-content:center;
+                          color:white;font-size:10px;font-weight:700;text-align:center;
+                          line-height:1.2;">
+                {{ meeting.schedule_time|date:"d" }}<br>{{ meeting.schedule_time|date:"M" }}
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:13px;color:#133957;">{{ meeting.title }}</div>
+                <div style="font-size:11px;color:#888;">
+                  {{ meeting.team.name }} &nbsp;·&nbsp;
+                  {{ meeting.schedule_time|date:"H:i" }} &nbsp;·&nbsp;
+                  {{ meeting.platform|default:"—" }}
+                </div>
+              </div>
+            </div>
+            <span class="badge bg-success" style="font-size:10px;">Upcoming</span>
+          </div>
+        </a>
+        {% empty %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar-x" style="font-size:32px;display:block;margin-bottom:8px;"></i>
+          No upcoming meetings.
+          <a href="{% url 'schedule:create' %}">Schedule one?</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
