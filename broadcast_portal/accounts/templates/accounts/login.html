@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block auth_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign In – Broadcast Engineering</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #133957; min-height: 100vh; display: flex; }
+    .left-panel {
+      background: #133957; width: 55%; min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; padding: 60px;
+      color: white;
+    }
+    .left-panel .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 60px; }
+    .left-panel .logo-wrap .logo-box {
+      width: 42px; height: 42px; background: #476A86;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 20px;
+    }
+    .left-panel h1 { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; }
+    .left-panel p { color: rgba(255,255,255,0.6); font-size: 14px; }
+    .right-panel {
+      background: #F5F5F5; width: 45%; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center; padding: 60px;
+    }
+    .login-card { width: 100%; max-width: 380px; }
+    .login-card h2 { font-weight: 700; color: #133957; font-size: 24px; }
+    .login-card p.sub { color: #888; font-size: 13px; margin-bottom: 28px; }
+    .form-label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #555; font-weight: 600; }
+    .form-control { border-radius: 8px; border: 1px solid #ddd; padding: 10px 14px; font-size: 14px; }
+    .btn-signin {
+      background: #133957; color: white; width: 100%; padding: 12px;
+      border: none; border-radius: 8px; font-weight: 600; font-size: 14px; margin-top: 8px;
+    }
+    .btn-signin:hover { background: #476A86; }
+    .btn-create {
+      background: transparent; color: #133957; width: 100%; padding: 11px;
+      border: 1px solid #133957; border-radius: 8px; font-weight: 600; font-size: 14px;
+    }
+    .btn-create:hover { background: #133957; color: white; }
+    .divider { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 12px; margin: 16px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #ddd; }
+    .alert-danger { border-radius: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="left-panel">
+  <div class="logo-wrap">
+    <div class="logo-box">G</div>
+    <span style="font-size:13px;line-height:1.3;">Global<br>Engineering</span>
+  </div>
+  <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:8px;">Broadcast Engineering Teams Portal</p>
+  <h1>Welcome<br>Back Engineer.</h1>
+  <p>Centralised portal for every engineering team</p>
+</div>
+<div class="right-panel">
+  <div class="login-card">
+    <h2>Sign in</h2>
+    <p class="sub">Enter your credentials to access your dashboard</p>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Work Email / Username</label>
+        <input type="text" name="username" class="form-control" placeholder="username or email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Enter your password here" required>
+      </div>
+      <button type="submit" class="btn btn-signin">SIGN IN TO THE PORTAL</button>
+      <div style="text-align:right;margin-top:8px;"><a href="/accounts/password-reset/" style="font-size:12px;color:#476A86;">Forgot Password?</a></div>
+    </form>
+    <div class="divider">New Here?</div>
+    <a href="{% url 'accounts:register' %}" class="btn btn-create">CREATE AN ACCOUNT</a>
+  </div>
+</div>
+</body>
+</html>
+{% endblock %}

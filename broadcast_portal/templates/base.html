@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Broadcast Engineering Portal{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F5F5;
+      --primary: #133957;
+      --secondary: #476A86;
+      --white: #FFFFFF;
+      --text2: #2E6B4F;
+      --text3: #7B2D2D;
+    }
+    body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; }
+    .sidebar {
+      width: 220px; min-height: 100vh;
+      background-color: var(--primary); color: var(--white);
+      position: fixed; top: 0; left: 0; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    .sidebar .brand {
+      padding: 20px 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+    .sidebar .brand .logo {
+      width: 36px; height: 36px; background: var(--secondary);
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 18px;
+      color: white; float: left; margin-right: 10px;
+    }
+    .sidebar .brand span { font-size: 13px; line-height: 1.2; display: block; padding-top: 2px; }
+    .sidebar nav { flex: 1; padding: 16px 0; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; color: rgba(255,255,255,0.8);
+      text-decoration: none; font-size: 14px; transition: all .2s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(255,255,255,0.12); color: white;
+      border-left: 3px solid white;
+    }
+    .sidebar nav .nav-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+      color: rgba(255,255,255,0.4); padding: 16px 20px 4px;
+    }
+    .sidebar .account-links { border-top: 1px solid rgba(255,255,255,0.15); padding: 12px 0; }
+    .main-content { margin-left: 220px; padding: 0; min-height: 100vh; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid #e0e0e0;
+      padding: 12px 28px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar .search-box input {
+      border: 1px solid #ddd; border-radius: 8px; padding: 8px 16px;
+      width: 340px; font-size: 14px; outline: none;
+    }
+    .topbar .user-badge {
+      background: var(--primary); color: white; border-radius: 50%;
+      width: 34px; height: 34px; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 600;
+    }
+    .page-body { padding: 28px; }
+    .card { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .card-header-custom {
+      background: var(--primary); color: white;
+      border-radius: 10px 10px 0 0; padding: 14px 20px; font-weight: 600;
+    }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--secondary); border-color: var(--secondary); }
+    .btn-secondary { background: var(--secondary); border-color: var(--secondary); color: white; }
+    .badge-active { background: var(--text2); }
+    .badge-disbanded { background: var(--text3); }
+    .stat-card {
+      background: white; border-radius: 10px; padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .stat-card .stat-label { font-size: 12px; color: #888; }
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="d-flex">
+  <div class="sidebar">
+    <div class="brand clearfix">
+      <div class="logo">G</div>
+      <span style="font-size:11px;padding-top:4px;">Global<br>Engineering</span>
+    </div>
+    <nav>
+      <a href="{% url 'core:dashboard' %}" class="{% if request.resolver_match.namespace == 'core' %}active{% endif %}">
+        <i class="bi bi-house"></i> Dashboard
+      </a>
+      <a href="{% url 'teams:list' %}" class="{% if request.resolver_match.namespace == 'teams' %}active{% endif %}">
+        <i class="bi bi-people"></i> Teams
+      </a>
+      <a href="{% url 'organization:org' %}" class="{% if request.resolver_match.namespace == 'organization' %}active{% endif %}">
+        <i class="bi bi-diagram-3"></i> Organization
+      </a>
+      <a href="{% url 'messaging:inbox' %}" class="{% if request.resolver_match.namespace == 'messaging' %}active{% endif %}" style="position:relative;">
+        <i class="bi bi-envelope"></i> Messages
+      </a>
+      <a href="{% url 'schedule:list' %}" class="{% if request.resolver_match.namespace == 'schedule' %}active{% endif %}">
+        <i class="bi bi-calendar3"></i> Schedule
+      </a>
+      <a href="{% url 'schedule:monthly' %}" class="{% if 'monthly' in request.path %}active{% endif %}">
+        <i class="bi bi-calendar-month"></i> Monthly
+      </a>
+      <div class="nav-label">Account</div>
+    </nav>
+    <div class="account-links">
+      <a href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a>
+      <a href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+  </div>
+
+  <div class="main-content w-100">
+    <div class="topbar">
+      <form method="get" action="{% url 'teams:list' %}" class="search-box">
+        <input type="text" name="q" placeholder="Search Teams, Managers, or Departments"
+               value="{{ request.GET.q }}">
+      </form>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-muted" style="font-size:13px;">{{ user.get_full_name|default:user.username }}</span>
+        <div class="user-badge">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      </div>
+    </div>
+
+    <div class="page-body">
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+            {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
