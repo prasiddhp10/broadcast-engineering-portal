@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ department.department_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" style="font-size:13px;">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'organization:org' %}">Organisation</a></li>
+    <li class="breadcrumb-item active">{{ department.department_name }}</li>
+  </ol>
+</nav>
+
+<div class="mb-4">
+  <h4 style="color:#133957;font-weight:700;margin:0;">{{ department.department_name }}</h4>
+  {% if department.department_head %}
+  <div style="color:#555;font-size:14px;margin-top:4px;">
+    <i class="bi bi-person-fill"></i> Department Head: <strong>{{ department.department_head.get_full_name }}</strong>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value">{{ teams|length }}</div>
+      <div class="stat-label">Teams</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card text-center">
+      <div class="stat-value" style="color:#2E6B4F;">{{ teams|length }}</div>
+      <div class="stat-label">Active Teams</div>
+    </div>
+  </div>
+</div>
+
+<h5 style="color:#133957;font-weight:600;margin-bottom:16px;">Teams in this Department</h5>
+{% for team in teams %}
+<div class="card mb-3 p-3">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <div style="font-weight:700;font-size:15px;color:#133957;">{{ team.name }}</div>
+      {% if team.team_leader %}
+      <div style="font-size:13px;color:#888;"><i class="bi bi-person"></i> {{ team.team_leader.get_full_name }}</div>
+      {% endif %}
+      {% if team.team_type %}
+      <div style="font-size:12px;color:#476A86;">Type: {{ team.team_type }}</div>
+      {% endif %}
+      {% if team.key_skills %}
+      <div style="font-size:12px;color:#555;margin-top:4px;">Skills: {{ team.key_skills|truncatechars:80 }}</div>
+      {% endif %}
+    </div>
+    <div class="text-end">
+      <span class="badge {% if team.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %} mb-2">{{ team.status }}</span>
+      <br>
+      <a href="{% url 'teams:detail' team.pk %}" class="btn btn-sm btn-primary">View Team</a>
+    </div>
+  </div>
+  {% if team.members.count %}
+  <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;">
+    <div style="font-size:11px;color:#888;margin-bottom:6px;">MEMBERS ({{ team.members.count }})</div>
+    <div class="d-flex flex-wrap gap-2">
+      {% for m in team.members.all|slice:":6" %}
+      <span class="badge" style="background:#eaf0f6;color:#133957;font-size:11px;">{{ m.user.get_full_name }}</span>
+      {% endfor %}
+      {% if team.members.count > 6 %}
+      <span class="badge bg-secondary" style="font-size:11px;">+{{ team.members.count|add:"-6" }} more</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% empty %}
+<div class="alert alert-info">No teams in this department.</div>
+{% endfor %}
+
+{% if dependencies %}
+<h5 style="color:#133957;font-weight:600;margin:20px 0 12px;">Internal Dependencies</h5>
+<div class="card p-3">
+  {% for dep in dependencies %}
+  <div class="d-flex align-items-center gap-3 mb-2 p-2 border-bottom">
+    <a href="{% url 'teams:detail' dep.team.pk %}" style="font-weight:600;font-size:13px;color:#133957;">{{ dep.team.name }}</a>
+    <span style="color:#888;font-size:12px;">→ depends on →</span>
+    <a href="{% url 'teams:detail' dep.depends_on_team.pk %}" style="font-weight:600;font-size:13px;color:#476A86;">{{ dep.depends_on_team.name }}</a>
+    <span class="badge bg-light text-muted" style="font-size:11px;">{{ dep.dependency_type }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
