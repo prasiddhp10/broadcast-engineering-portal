@@ -36,4 +36,4 @@ class MeetingParticipant(models.Model):
         unique_together = ('meeting', 'user')
     
     def __str__(self):
-        return f"{self.get_full_name()} in {self.meeting.title}"
+        return f"{self.user.get_full_name()} in {self.meeting.title}"
