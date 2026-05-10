@@ -13,8 +13,8 @@ import datetime
 @login_required
 def dashboard(request):
     total_teams = Team.objects.count()
-    active_teams = Team.objects.filter(status = 'Active').count()
-    offline_teams = Team.objects.exclude(status = 'Active').count()
+    active_teams = Team.objects.filter(status = 'ACTIVE').count()
+    offline_teams = Team.objects.exclude(status = 'ACTIVE').count()
     total_departments = Department.objects.count()
 
     #Users team
