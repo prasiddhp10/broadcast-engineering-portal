@@ -63,7 +63,7 @@ def profile_view(request):
                 messages.success(request, 'Password Changed Successfully!')
                 return redirect('accounts:profile')
         
-        return render(request, 'accounts/profile.html', {
-            'profile_form': profile_form, 
-            'password_form' : password_form,
-        })
+    return render(request, 'accounts/profile.html', {
+        'profile_form': profile_form, 
+        'password_form' : password_form,
+    })

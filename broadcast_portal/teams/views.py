@@ -14,7 +14,9 @@ def team_list(request):
         teams = teams.filter(name__icontains=q) | teams.filter(
             department__department_name__icontains=q) | teams.filter(
             team_leader__first_name__icontains=q) | teams.filter(
-            team_leader__last_name__icontains=q)
+            team_leader__last_name__icontains=q) | teams.filter(
+                key_skills__icontains=q) | teams.filter(
+                    development_focus__icontains=q)
     departments = Department.objects.all()
     dept_filter = request.GET.get('dept', '')
     if dept_filter:
